@@ -24,7 +24,8 @@ export default function AuthPage() {
     if (!res.ok) return setError(data.message);
 
     if (isLogin) {
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("planning-poker-token", data.token);
+
       window.location.href = "/poker";
     } else {
       setIsLogin(true); // Após registro, troca para login
