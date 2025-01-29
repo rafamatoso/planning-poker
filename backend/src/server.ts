@@ -3,6 +3,8 @@ import express from "express";
 import http from "http";
 import { Server, Socket } from "socket.io";
 import { corsOptions } from "./config/cors";
+import authRoutes from "./routes/auth";
+import usersRoutes from "./routes/users";
 import { VoteData } from "./types";
 
 const app = express();
@@ -12,6 +14,19 @@ const io = new Server(server, {
 });
 
 app.use(cors());
+app.use(express.json());
+app.use("/auth", authRoutes);
+app.use("/user", usersRoutes);
+
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+
+  if (!token) {
+    return next(new Error("Authentication error"));
+  }
+
+  next();
+});
 
 io.on("connection", (socket: Socket) => {
   console.log("User connected:", socket.id);
