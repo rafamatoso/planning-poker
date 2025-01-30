@@ -1,5 +1,5 @@
-export interface VoteData {
-  [key: string]: string;
+export interface IVote {
+  [key: string]: { username: string; vote: string };
 }
 
 export interface User {
