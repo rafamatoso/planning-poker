@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { LoadingSpinner } from "../../components/LoadingSpinner";
+import Toast from "../../components/Toast";
 
 const API_URL = "http://localhost:3001/auth";
 
@@ -6,29 +8,37 @@ export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleAuth = async () => {
-    setError("");
+    setIsLoading(true);
 
     const endpoint = isLogin ? "/login" : "/register";
 
-    const res = await fetch(`${API_URL}${endpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const res = await fetch(`${API_URL}${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) return setError(data.message);
+      if (!res.ok) {
+        Toast.error(data.message || "Erro ao autenticar");
+        return;
+      }
 
-    if (isLogin) {
-      localStorage.setItem("planning-poker-token", data.token);
-
-      window.location.href = "/poker";
-    } else {
-      setIsLogin(true); // Após registro, troca para login
+      if (isLogin) {
+        localStorage.setItem("planning-poker-token", data.token);
+        window.location.href = "/poker";
+      } else {
+        setIsLogin(true); // Após registro, troca para login
+      }
+    } catch (err) {
+      Toast.error("Erro ao autenticar");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -38,7 +48,7 @@ export default function AuthPage() {
         <h2 className="text-xl font-bold mb-4 text-center">
           {isLogin ? "Login" : "Registro"}
         </h2>
-        {error && <p className="text-red-500 text-center mb-3">{error}</p>}
+
         <input
           type="text"
           placeholder="Usuário"
@@ -53,12 +63,20 @@ export default function AuthPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button
-          onClick={handleAuth}
-          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-        >
-          {isLogin ? "Entrar" : "Registrar"}
-        </button>
+
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : (
+          <button
+            onClick={handleAuth}
+            className={`w-full ${
+              isLogin ? "bg-blue-500" : "bg-black"
+            } text-white p-2 rounded hover:bg-blue-600`}
+          >
+            {isLogin ? "Entrar" : "Registrar"}
+          </button>
+        )}
+
         <p className="mt-3 text-center text-sm">
           {isLogin ? "Não tem uma conta?" : "Já tem uma conta?"}{" "}
           <button
