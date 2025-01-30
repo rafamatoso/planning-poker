@@ -6,6 +6,7 @@ const VOTE_NUMBERS = ["1", "2", "3", "5", "8", "13", "21", "34"];
 
 const Poker = () => {
   const [votes, setVotes] = useState<IVote>({});
+  const [selectedVote, setSelectedVote] = useState<string | null>(null); // Estado para o número selecionado
 
   useEffect(() => {
     socket.on("updateVotes", (data) => {
@@ -19,6 +20,7 @@ const Poker = () => {
 
   const sendVote = (value: string) => {
     socket.emit("vote", value);
+    setSelectedVote(value);
   };
 
   return (
@@ -30,18 +32,23 @@ const Poker = () => {
           <button
             key={num}
             onClick={() => sendVote(num)}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 transition"
+            className={`min-w-[60px] px-4 py-2 rounded-lg shadow-md transition-all duration-200 ${
+              selectedVote === num
+                ? "bg-white border-2 border-black text-black font-bold hover:bg-gray-200"
+                : "bg-blue-500 text-white hover:bg-blue-700"
+            }`}
           >
             {num}
           </button>
         ))}
       </div>
 
-      <h3 className="text-xl font-semibold text-gray-700 mt-8">Votos:</h3>
-      <ul className="bg-white shadow-md rounded-lg p-4 mt-4 w-80">
+      <h3 className="text-xl font-semibold text-gray-800 mt-8">Votos:</h3>
+
+      <ul className="bg-white shadow-md rounded-lg px-4 py-2 mt-4 w-80 min-h-10">
         {Object.entries(votes).map(([id, { username, vote }]) => (
           <li key={id} className="text-gray-800">
-            <strong>{username}</strong>: {vote}
+            <strong>{username}</strong>: <strong>{vote}</strong>
           </li>
         ))}
       </ul>
